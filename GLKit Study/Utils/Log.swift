@@ -10,10 +10,10 @@ import Foundation
 
 class Log {
     public static func d(_ tag: String, _ message: Any) {
-        print("Debug \(Date()) \(tag) : \(message)")
+        print("Debug \(tag) : \(message)")
     }
     
     public static func e(_ tag: String, _ message: Any) {
-        print("\u{001B}[0;31mError \(Date()) \(tag) : \(message)")
+        print("\u{001B}[0;31mError \(tag) : \(message)")
     }
 }

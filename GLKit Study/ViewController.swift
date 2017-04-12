@@ -11,13 +11,16 @@ import GLKit
 class ViewController: GLKViewController {
     private let TAG = "ViewController"
     
-    private var translateX: Float = 0
-    private var translateY: Float = 0
+    private var SCREEN_WIDTH: CGFloat = 0, SCREEN_HEIGHT: CGFloat = 0
+    
+    var translateX: CGFloat = 0
+    var translateY: CGFloat = 0
+    var tempX: CGFloat = 0.0, tempY: CGFloat = 0.0
     private let quad: [Float] = [
-        -0.5, -0.5,
-        0.5, -0.5,
-        -0.5, 0.5,
-        0.5, 0.5,
+        -0.5, -0.25,     //Left  Bottom
+        0.5, -0.25,      //Right Bottom
+        -0.5, 0.25,      //Left  Top
+        0.5, 0.25,       //Right Top
     ]
     
     var program: GLuint = 0
@@ -28,6 +31,11 @@ class ViewController: GLKViewController {
         let glkView: GLKView = view as! GLKView
         glkView.context = EAGLContext(api: .openGLES2)
         glkView.drawableColorFormat = .RGBA8888
+        
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
+        glkView.addGestureRecognizer(panGesture)
+        
+        
         EAGLContext.setCurrent(glkView.context)
         
         setup()
@@ -40,8 +48,21 @@ class ViewController: GLKViewController {
     
     //초기 설정
     private func setup() {
+        SCREEN_WIDTH = self.view.bounds.width
+        SCREEN_HEIGHT = self.view.bounds.height
+        
         //지정한 색으로 초기화
         glClearColor(80.0/255.0, 170.0/255.0, 80.0/255.0, 1.0)
+        
+        glMatrixMode(GLenum(GL_PROJECTION))
+        glLoadIdentity()
+        glOrthof(0.0, 480.0, 0.0, 640.0, -1.0, 1.0)
+        glMatrixMode(GLenum(GL_MODELVIEW))
+        glLoadIdentity()
+        glViewport(0, 0, GLsizei(SCREEN_WIDTH), GLsizei(SCREEN_HEIGHT))
+        
+        glEnable(GLenum(GL_DEPTH_TEST))
+        
         
         //SimpleVertexShader.glsl의 Text를 불러와 VertexShader로 컴파일
         let vertexShader = ShaderUtil.compileShader(shaderName: "SimpleVertexShader", shaderType: GLenum(GL_VERTEX_SHADER))
@@ -87,21 +108,37 @@ class ViewController: GLKViewController {
     override func glkView(_ view: GLKView, drawIn rect: CGRect) {
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT))
         
-        translateX += 0.01
-        translateY -= 0.005
-        
-        if translateX > 1 {
-            translateX = -1.0
-        }
-        
-        if translateY < -1.0 {
-            translateY = 1.0
-        }
-        
         // TODO : Draw a triangle
-        glUniform2f(glGetUniformLocation(program, "translate"), translateX, translateY)
+        glUniform2f(glGetUniformLocation(program, "translate"), GLfloat(translateX), GLfloat(translateY))
         glUniform4f(glGetUniformLocation(program, "color"), 1.0, 0.0, 0.0, 1.0)
         glDrawArrays(GLenum(GL_TRIANGLE_STRIP), 0, 4)
     }
 }
 
+extension ViewController {
+    
+    func handlePanGesture(recognizer: UIPanGestureRecognizer) {
+        if recognizer.state == .ended {
+            Log.d("ViewController", "Gesture Ended")
+            tempX = 0
+            tempY = 0
+            return
+        }
+        let touchLocation = recognizer.location(in: self.view)
+        
+        if tempX == 0 && tempY == 0{
+            tempX = touchLocation.x//self.view.bounds.width
+            tempY = touchLocation.y//self.view.bounds.height * -1
+            return
+        }
+        
+        translateX = translateX + (touchLocation.x - tempX) * 2/self.view.bounds.width
+        translateY = translateY + (touchLocation.y - tempY) * 2/self.view.bounds.height * -1
+        tempX = touchLocation.x
+        tempY = touchLocation.y
+        
+        //translateX = touchPoint.x/self.view.bounds.width
+        //translateY = touchPoint.y/self.view.bounds.height * -1
+        Log.d("ViewController", "Touch Location : \(touchLocation), Translate (\(translateX), \(translateY))")
+    }
+}
