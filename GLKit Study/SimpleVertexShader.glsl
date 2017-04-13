@@ -9,5 +9,5 @@ void main() {
     //임시 주석
     //projection * view *
     //gl_Position = projection * view * vec4(position.x + translate.x, position.y + translate.y, 0.0, 1.0);
-    gl_Position = projection * view * vec4(position.x, position.y, 0.0, 1.0);
+    gl_Position = projection * view * vec4(position.x, position.y, 10.0, 1.0);
 }

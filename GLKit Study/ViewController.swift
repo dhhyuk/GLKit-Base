@@ -15,16 +15,18 @@ class ViewController: GLKViewController {
     
     var translateX: CGFloat = 0
     var translateY: CGFloat = 0
-    var tempX: CGFloat = 0.0, tempY: CGFloat = 0.0
+    var lastX : CGFloat = 0.0, lastY : CGFloat = 0.0
+    
+    var firstMouse : Bool = true
+    
     private let quad: [Float] = [
-        -10.5, -10.25,     //Left  Bottom
-        10.5, -10.25,      //Right Bottom
-        -10.5, 10.25,      //Left  Top
-        10.5, 10.25,       //Right Top
+        -10.0, -10.0,     //Left  Bottom
+        10.0, -10.0,      //Right Bottom
+        -10.0, 10.0,      //Left  Top
+        10.0, 10.0,       //Right Top
     ]
     
-    var effect: GLKBaseEffect!
-    
+    let camera : Camera = Camera()
     var program: GLuint = 0
     
     override func viewDidLoad() {
@@ -38,8 +40,6 @@ class ViewController: GLKViewController {
         glkView.addGestureRecognizer(panGesture)
         
         EAGLContext.setCurrent(glkView.context)
-        
-        effect = GLKBaseEffect()
         
         setup()
     }
@@ -55,7 +55,7 @@ class ViewController: GLKViewController {
         SCREEN_HEIGHT = self.view.bounds.height
         
         //지정한 색으로 초기화
-        glClearColor(80.0/255.0, 170.0/255.0, 80.0/255.0, 1.0)
+        glClearColor(0.0, 0.0, 0.0, 1.0)
         
         glMatrixMode(GLenum(GL_PROJECTION))
         glLoadIdentity()
@@ -120,8 +120,24 @@ class ViewController: GLKViewController {
         //glUniform2f(glGetUniformLocation(program, "translate"), GLfloat(translateX), GLfloat(translateY))
         glUniform4f(glGetUniformLocation(program, "color"), 1.0, 0.0, 0.0, 1.0)
         
+        var projection = GLKMatrix4MakePerspective(camera.zoom, Float(SCREEN_WIDTH/SCREEN_HEIGHT), 0.1, 1000.0)
+        var view = camera.getViewMatrix()
         
-        //Projection    Matrix
+        _ = withUnsafePointer(to: &projection.m) {
+            $0.withMemoryRebound(to: GLfloat.self, capacity: MemoryLayout.size(ofValue: projection.m)) {
+                glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GLboolean(GL_FALSE), $0)
+            }
+        }
+        
+        _ = withUnsafePointer(to: &view.m) {
+            $0.withMemoryRebound(to: GLfloat.self, capacity: MemoryLayout.size(ofValue: view.m)) {
+                glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GLboolean(GL_FALSE), $0)
+            }
+        }
+        
+        
+        
+        /*//Projection    Matrix
         //fovy, aspect, zNear, zFar
         var projectionMatrix : GLKMatrix4 = GLKMatrix4MakePerspective(45.0, Float(SCREEN_WIDTH/SCREEN_HEIGHT), 0.1, 1000.0)
         
@@ -136,7 +152,6 @@ class ViewController: GLKViewController {
         
         
         //View          Matrix
-        
         let front = normalize(vector3(cos(GLKMathDegreesToRadians(yaw)) * cos(GLKMathDegreesToRadians(pitch)), sin(GLKMathDegreesToRadians(pitch)), sin(GLKMathDegreesToRadians(yaw)) * cos(GLKMathDegreesToRadians(pitch))))
         let right = normalize(cross(front, vector3(0.0, 2.0, 2.0)))
         let up = normalize(cross(right, front))
@@ -149,7 +164,7 @@ class ViewController: GLKViewController {
             $0.withMemoryRebound(to: GLfloat.self, capacity: MemoryLayout.size(ofValue: viewMatrix.m)) {
                 glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GLboolean(GL_FALSE), $0)
             }
-        }
+        }*/
         
         glDrawArrays(GLenum(GL_TRIANGLE_STRIP), 0, 4)
     }
@@ -158,34 +173,26 @@ class ViewController: GLKViewController {
 extension ViewController {
     
     func handlePanGesture(recognizer: UIPanGestureRecognizer) {
+        
         if recognizer.state == .ended {
-            //Log.d("ViewController", "Gesture Ended")
-            tempX = 0
-            tempY = 0
+            lastX = 0
+            lastY = 0
             return
         }
+        
         let touchLocation = recognizer.location(in: self.view)
-        
-        if tempX == 0 && tempY == 0{
-            tempX = touchLocation.x//self.view.bounds.width
-            tempY = touchLocation.y//self.view.bounds.height * -1
+        if lastX == 0 && lastY == 0{
+            lastX = touchLocation.x
+            lastY = touchLocation.y
             return
         }
         
-        translateX = translateX + (touchLocation.x - tempX) * 2/self.view.bounds.width
-        translateY = translateY + (touchLocation.y - tempY) * 2/self.view.bounds.height * -1
+        let xOffset = touchLocation.x - lastX
+        let yOffset = lastY - touchLocation.y
         
-        yaw = yaw + Float(translateX)
-        //pitch = pitch + Float(translateY)
-        Log.d("ViewController", "yaw : \(yaw) , pitch : \(pitch)")
+        lastX = touchLocation.x
+        lastY = touchLocation.y
         
-        tempX = touchLocation.x
-        tempY = touchLocation.y
-        
-        
-        
-        //translateX = touchPoint.x/self.view.bounds.width
-        //translateY = touchPoint.y/self.view.bounds.height * -1
-        //Log.d("ViewController", "Touch Location : \(touchLocation), Translate (\(translateX), \(translateY))")
+        camera.processMouseMovement(xOffset: GLfloat(xOffset), yOffset: GLfloat(yOffset))
     }
 }
