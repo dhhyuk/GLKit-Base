@@ -19,8 +19,8 @@ class ViewController: GLKViewController {
     
     var firstMouse : Bool = true
     
-    private let quad: [Float] = [
-        -10.0, -10.0, 10.0,     //Left  Bottom
+    private var quad: [Float] = [
+        /*-10.0, -10.0, 10.0,     //Left  Bottom
         10.0, -10.0, 10.0,      //Right Bottom
         -10.0, 10.0, 10.0,      //Left  Top
         10.0, 10.0, 10.0,       //Right Top
@@ -28,7 +28,7 @@ class ViewController: GLKViewController {
         -10.0, 10.0, -10.0,     //Left  Bottom
         10.0, 10.0, -10.0,      //Right Bottom
         -10.0, -10.0, -10.0,      //Left  Top
-        10.0, -10.0, -10.0,       //Right Top
+        10.0, -10.0, -10.0,       //Right Top*/
     ]
     
     let camera : Camera = Camera()
@@ -41,6 +41,7 @@ class ViewController: GLKViewController {
         glkView.context = EAGLContext(api: .openGLES2)
         glkView.drawableColorFormat = .RGBA8888
         
+        //glkView에 Drag Gesture 추가
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(recognizer:)))
         glkView.addGestureRecognizer(panGesture)
         
@@ -62,14 +63,14 @@ class ViewController: GLKViewController {
         //지정한 색으로 초기화
         glClearColor(0.2, 0.2, 0.2, 1.0)
         
-        glMatrixMode(GLenum(GL_PROJECTION))
-        glLoadIdentity()
-        glOrthof(0.0, 480.0, 0.0, 640.0, -1.0, 1.0)
-        glMatrixMode(GLenum(GL_MODELVIEW))
-        glLoadIdentity()
-        glViewport(0, 0, GLsizei(SCREEN_WIDTH), GLsizei(SCREEN_HEIGHT))
-        
-        glEnable(GLenum(GL_DEPTH_TEST))
+        for r in 0...360 {
+            for p in 0...360 {
+                let vector = getVector3FromAngleDistance(angle1: r, angle2: p, distance: 2)
+                quad.append(vector.x)
+                quad.append(vector.y)
+                quad.append(vector.z)
+            }
+        }
         
         
         //SimpleVertexShader.glsl의 Text를 불러와 VertexShader로 컴파일
@@ -108,6 +109,20 @@ class ViewController: GLKViewController {
         glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), 0, quad)
     }
     
+    private func getVector3FromAngleDistance(angle1: Int, angle2: Int, distance: Float) -> GLKVector3 {
+        var vector : GLKVector3 = GLKVector3()
+        let radian1 = Float.pi * Float(angle1) / 180.0
+        let radian2 = Float.pi * Float(angle2) / 180.0
+        
+        vector.x = distance * sin(radian2) * cos(radian1)
+        
+        //vector.z = GLKVector2Normalize(GLKVector2(v: (sin(radian1) * distance, cos(radian2) * distance)))
+        vector.y = distance * sin(radian2) * sin(radian1)
+        vector.z = distance * cos(radian2)
+        
+        return vector
+    }
+    
     func update() {
         
     }
@@ -137,7 +152,9 @@ class ViewController: GLKViewController {
             }
         }
         
-        glDrawArrays(GLenum(GL_TRIANGLE_STRIP), 0, GLsizei(self.quad.count / 3))
+        glEnable(GLenum(GL_POINT_SMOOTH))
+        glPointSize(40)
+        glDrawArrays(GLenum(GL_POINTS), 0, GLsizei(self.quad.count/3))
     }
 }
 
