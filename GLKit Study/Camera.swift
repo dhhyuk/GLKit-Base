@@ -28,7 +28,7 @@ class Camera {
     var mouseSensitivity : GLfloat = 0.0
     var zoom : GLfloat = 0.0
     
-    public init(position : GLKVector3 = GLKVector3(v: (0.0, 0.0, 0.0)), up : GLKVector3 = GLKVector3(v: (0.0, 1.0, 0.0)), yaw : GLfloat = 90.0, pitch : GLfloat = 0.0) {
+    public init(position : GLKVector3 = GLKVector3(v: (0.0, 0.2, 0.0)), up : GLKVector3 = GLKVector3(v: (0.0, 1.0, 0.0)), yaw : GLfloat = 90.0, pitch : GLfloat = 0.0) {
         self.position = position
         self.worldUp = up
         self.yaw = yaw
@@ -66,8 +66,6 @@ class Camera {
         self.yaw = self.yaw + xOffset * mouseSensitivity
         self.pitch = self.pitch + yOffset * mouseSensitivity
         
-        Log.d("Camera", "yaw : \(yaw), pitch : \(pitch)")
-        
         if constrainPitch {
             if self.pitch > 89.0 {
                 self.pitch = 89.0
@@ -84,9 +82,11 @@ class Camera {
     private func updateCameraVectors()
     {
         var front : GLKVector3 = GLKVector3(v: (0.0, 0.0, 0.0))
+    
         front.x = cos(GLKMathDegreesToRadians(yaw)) * cos(GLKMathDegreesToRadians(pitch))
         front.y = sin(GLKMathDegreesToRadians(pitch))
         front.z = sin(GLKMathDegreesToRadians(yaw)) * cos(GLKMathDegreesToRadians(pitch))
+        
         self.front = GLKVector3Normalize(front)
         self.right = GLKVector3Normalize(GLKVector3CrossProduct(front, worldUp))
         self.up = GLKVector3Normalize(GLKVector3CrossProduct(right, front))

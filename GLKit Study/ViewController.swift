@@ -63,14 +63,16 @@ class ViewController: GLKViewController {
         //지정한 색으로 초기화
         glClearColor(0.2, 0.2, 0.2, 1.0)
         
-        for r in 0...360 {
+        /*for r in 0...360 {
             for p in 0...360 {
-                let vector = getVector3FromAngleDistance(angle1: r, angle2: p, distance: 2)
+                let distance = Float.random(min: 1, max: 2)
+                //print(distance)
+                let vector = getVector3FromAngleDistance(angle1: r, angle2: p, distance: distance)
                 quad.append(vector.x)
                 quad.append(vector.y)
                 quad.append(vector.z)
             }
-        }
+        }*/
         
         
         //SimpleVertexShader.glsl의 Text를 불러와 VertexShader로 컴파일
@@ -101,12 +103,6 @@ class ViewController: GLKViewController {
             
             Log.e(TAG, "Program Link Failed! Error: \(linkLogString)")
         }
-        
-        //program 사용
-        glUseProgram(program)
-        glEnableVertexAttribArray(0)
-        
-        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), 0, quad)
     }
     
     private func getVector3FromAngleDistance(angle1: Int, angle2: Int, distance: Float) -> GLKVector3 {
@@ -127,17 +123,41 @@ class ViewController: GLKViewController {
         
     }
     
-    public var yaw: Float = 90.0
-    public var pitch: Float = 0.0
+    private var r = 0, p = 0
     
     //랜더링 하는 곳
     override func glkView(_ view: GLKView, drawIn rect: CGRect) {
         glClear(GLbitfield(GL_COLOR_BUFFER_BIT))
+        if p < 360 {
+            p = p + 1
+        } else {
+            p = 0
+            r = r + 1
+        }
+        
+        let distance = Float.random(min: 1, max: 1.2)
+        let vector = getVector3FromAngleDistance(angle1: r, angle2: p, distance: distance)
+        
+        //print("r : \(r), p : \(p), distance : \(distance)")
+        
+        quad.append(vector.x)
+        quad.append(vector.y)
+        quad.append(vector.z)
+        
+        
+        
+        //program 사용
+        glUseProgram(program)
+        glEnableVertexAttribArray(0)
+        
+        glVertexAttribPointer(0, 3, GLenum(GL_FLOAT), GLboolean(GL_FALSE), 0, quad)
+        
         
         //glUniform2f(glGetUniformLocation(program, "translate"), GLfloat(translateX), GLfloat(translateY))
         glUniform4f(glGetUniformLocation(program, "color"), 1.0, 0.0, 0.0, 1.0)
         
         var projection = GLKMatrix4MakePerspective(camera.zoom, Float(SCREEN_WIDTH/SCREEN_HEIGHT), 0.1, 1000.0)
+        
         var view = camera.getViewMatrix()
         
         _ = withUnsafePointer(to: &projection.m) {
@@ -182,5 +202,25 @@ extension ViewController {
         lastY = touchLocation.y
         
         camera.processMouseMovement(xOffset: GLfloat(xOffset), yOffset: GLfloat(yOffset))
+    }
+}
+
+public extension Float {
+    /// Returns a random floating point number between 0.0 and 1.0, inclusive.
+    public static var random:Float {
+        get {
+            return Float(arc4random()) / 0xFFFFFFFF
+        }
+    }
+    /**
+     Create a random num Float
+     
+     - parameter min: Float
+     - parameter max: Float
+     
+     - returns: Float
+     */
+    public static func random(min: Float, max: Float) -> Float {
+        return Float.random * (max - min) + min
     }
 }

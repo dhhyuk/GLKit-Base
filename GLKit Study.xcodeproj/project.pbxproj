@@ -181,7 +181,7 @@
 				TargetAttributes = {
 					4B4B65431E9DED60003F71A4 = {
 						CreatedOnToolsVersion = 8.3.1;
-						DevelopmentTeam = V8WAE5CSM5;
+						DevelopmentTeam = T9S323XZK2;
 						ProvisioningStyle = Automatic;
 					};
 					4B4B65571E9DED60003F71A4 = {
@@ -381,12 +381,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = V8WAE5CSM5;
+				DEVELOPMENT_TEAM = T9S323XZK2;
 				INFOPLIST_FILE = "GLKit Study/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dhyuk.study.GLKit-Study";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -394,12 +396,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = V8WAE5CSM5;
+				DEVELOPMENT_TEAM = T9S323XZK2;
 				INFOPLIST_FILE = "GLKit Study/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.dhyuk.study.GLKit-Study";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
